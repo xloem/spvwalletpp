@@ -5,6 +5,8 @@ project (spvwallet++ CXX)
 set (SPVWALLETPP_LIBRARIES spvwallet++ CACHE INTERNAL "")
 set (SPVWALLETPP_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE INTERNAL "")
 
+add_subdirectory(dependencies/grpc)
+
 ### begin go stuff
 find_library (golang REQUIRED)
 set (GOPATH ${CMAKE_CURRENT_BINARY_DIR}/go)
