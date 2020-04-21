@@ -244,3 +244,8 @@ std::vector<spvwallet::peer> spvwallet::peers()
 	}
 	return result;
 }
+
+void spvwallet::resyncblockchain(uint64_t timestamp)
+{
+	command({"resyncblockchain", to_iso8601(timestamp)});
+}

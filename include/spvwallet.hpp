@@ -80,7 +80,9 @@ public:
 	std::vector<transaction> transactions();
 	std::vector<peer> peers();
 
-	bool isRunning();
+	void resyncblockchain(uint64_t timestamp);
+
+	//bool isRunning();
 
 private:
 	std::string prefix;
