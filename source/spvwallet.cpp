@@ -16,6 +16,14 @@ uint64_t from_iso8601(string datetime)
 	strptime(datetime.c_str(), "%FT%T%z", &tm);
 	return mktime(&tm);
 }
+string to_iso8601(uint64_t timestamp)
+{
+	time_t timestamp_proper = timestamp;
+	struct tm * tm_p = gmtime(&timestamp_proper);
+	static thread_local char buffer[1024];
+	strftime(buffer, sizeof(buffer), "%FT%T%z", tm_p);
+	return buffer;
+}
 
 #include <string>
 #include <iomanip>
@@ -73,14 +81,40 @@ string spvwallet::command(vector<string> commands, bool output, bool wait, void 
 #include <unistd.h>
 void spvwallet::start(bool background, spvwallet::configuration configuration)
 {
-	string commands = "start";
+	std::vector<string> commands({"start"});
 	if (configuration.dataDirectory.size()) {
-		commands += " --datadir='" + configuration.dataDirectory + "'";
+		commands.push_back("--datadir=" + configuration.dataDirectory);
 	}
+	switch (configuration.network)
+	{
+	case spvwallet::configuration::BITCOIN:
+		break;
+	case spvwallet::configuration::TESTNET:
+		commands.push_back("--testnet");
+		break;
+	case spvwallet::configuration::REGTEST:
+		commands.push_back("--regtest");
+		break;
+	default:
+		throw error("Unrecognized", "invalid network selection");
+	};
+	if (configuration.mnemonic.size()) {
+		commands.push_back("--mnemonic=" + configuration.mnemonic);
+		if (configuration.mnemonicDate) {
+			commands.push_back("--walletcreationdate=" + to_iso8601(configuration.mnemonicDate));
+		}
+	}
+	if (configuration.trustedPeer.size()) {
+		commands.push_back("--trustedpeer=" + configuration.trustedPeer);
+	}
+	if (configuration.tor) {
+		commands.push_back("--tor");
+	}
+	commands.push_back("--feeapi=");
 	if (background) {
-		command({"start"}, false, false); 
+		command(commands, false, false); 
 	} else {
-		command({"start"}, true);
+		command(commands, true);
 	}
 }
 

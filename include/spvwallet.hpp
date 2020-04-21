@@ -18,8 +18,8 @@ public:
 			REGTEST
 		} network;
 		std::string mnemonic; // may be used to recreate a wallet
-		uint64_t mnemonicDate; // to speed syncing
-		std::string trustedpeer;
+		uint64_t mnemonicDate; // to speed syncing, earliest transaction
+		std::string trustedPeer;
 		bool tor;
 	};
 	struct transaction
