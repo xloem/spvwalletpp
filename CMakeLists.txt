@@ -7,6 +7,11 @@ set (SPVWALLETPP_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE INTERNAL
 
 #add_subdirectory(dependencies/grpc)
 
+### json
+set (JSON_BuildTests OFF CACHE INTERNAL "")
+set (JSON_Install OFF CACHE INTERNAL "")
+add_subdirectory (dependencies/json)
+
 ### begin go stuff
 find_library (golang REQUIRED)
 set (GOPATH ${CMAKE_CURRENT_BINARY_DIR}/go)
@@ -26,7 +31,8 @@ add_custom_command(OUTPUT ${SPVWALLET_BINARY}
 add_library (${SPVWALLETPP_LIBRARIES} source/spvwallet.cpp "${SPVWALLETPP_INCLUDE_DIRS}/spvwallet.hpp" ${SPVWALLET_BINARY})
 
 target_link_libraries (${SPVWALLETPP_LIBRARIES} ${CPR_LIBRARIES})
-target_include_directories (${SPVWALLETPP_LIBRARIES} PRIVATE ${JSON_INCLUDE_DIRS} PRIVATE ${CPR_INCLUDE_DIRS} PRIVATE ${SPVWALLETPP_INCLUDE_DIRS})
+target_link_libraries (${SPVWALLETPP_LIBRARIES} PRIVATE nlohmann_json::nlohmann_json)
+target_include_directories (${SPVWALLETPP_LIBRARIES} PRIVATE ${CPR_INCLUDE_DIRS} PRIVATE ${SPVWALLETPP_INCLUDE_DIRS})
 
 install (TARGETS ${SPVWALLETPP_LIBRARIES} RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 install (FILES include/siaskynet.hpp DESTINATION include)

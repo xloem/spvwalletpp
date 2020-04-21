@@ -10,4 +10,5 @@ int main()
 
 	cout << "SPVWallet version: " << spv.version() << endl;
 	cout << "Current address: " << spv.currentaddress() << endl;
+	cout << "Balance: " << spv.balance() << endl;
 }

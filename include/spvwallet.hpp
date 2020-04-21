@@ -26,6 +26,7 @@ public:
 	void start(bool background);
 
 	std::string currentaddress();
+	double balance();
 
 	bool isRunning();
 

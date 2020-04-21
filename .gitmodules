@@ -4,3 +4,6 @@
 [submodule "dependencies/grpc"]
 	path = dependencies/grpc
 	url = https://github.com/grpc/grpc.git
+[submodule "dependencies/json"]
+	path = dependencies/json
+	url = git@github.com:nlohmann/json

@@ -1,7 +1,9 @@
 #include <spvwallet.hpp>
 
+#include <nlohmann/json.hpp>
 
 using namespace std;
+using json = nlohmann::json;
 
 #include <string>
 #include <iomanip>
@@ -93,4 +95,10 @@ string spvwallet::version()
 string spvwallet::currentaddress()
 {
 	return command("currentaddress");
+}
+
+double spvwallet::balance()
+{
+	auto balances = json::parse(command("balance"));
+	return balances["confirmed"].get<double>() + balances["unconfirmed"].get<double>();
 }
