@@ -1,5 +1,5 @@
 [submodule "spvwallet-go"]
-	path = spvwallet-go
+	path = dependencies/spvwallet-go
 	url = https://github.com/OpenBazaar/spvwallet
 [submodule "dependencies/grpc"]
 	path = dependencies/grpc

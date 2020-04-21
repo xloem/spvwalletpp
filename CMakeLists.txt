@@ -12,8 +12,8 @@ find_library (golang REQUIRED)
 set (GOPATH ${CMAKE_CURRENT_BINARY_DIR}/go)
 set (SPVWALLET_BINARY ${GOPATH}/bin/spvwallet)
 add_custom_command(OUTPUT ${SPVWALLET_BINARY}
-	DEPENDS spvwallet-go/cmd/spvwallet/main.go
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/spvwallet-go
+	DEPENDS dependencies/spvwallet-go/cmd/spvwallet/main.go
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/spvwallet-go
 	COMMAND env GOPATH=${GOPATH} go get .
 	COMMAND env GOPATH=${GOPATH} go get github.com/OpenBazaar/spvwallet/cmd/spvwallet
 	COMMENT "Building go cmd spvwallet ...")
