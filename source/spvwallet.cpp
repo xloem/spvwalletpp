@@ -25,7 +25,7 @@ string command(string commands, bool output = false)
 {
 	string result = execute("spvwallet " + commands, output);
 	if (result.compare(0, 10, "rpc error:") == 0) {
-		throw spvwallet::error::make(result.substring(10));
+		throw spvwallet::error::make(result.substr(10));
 	}
 	return result; // suspect result may be json or line-delimited
 }
@@ -39,8 +39,8 @@ spvwallet::error spvwallet::error::make(string description)
 	description = " " + description;
 	auto codestart = description.find(" code = ");
 	auto descstart = description.find(" desc = ");
-	auto code = result.substr(codestart + 8, descstart);
-	auto desc = result.substr(descstart + 8);
+	auto code = description.substr(codestart + 8, descstart);
+	auto desc = description.substr(descstart + 8);
 	if (code == "Unavailable") {
 		return unavailable(code, description);
 	} else {
