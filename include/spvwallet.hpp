@@ -10,7 +10,7 @@ public:
 	{
 	public:
 		error(std::string code, std::string description);
-		static error make(std::string description);
+		static void makeAndThrow(std::string description);
 
 		class unavailable;
 	};
@@ -19,7 +19,18 @@ public:
 	public:
 		using error::error;
 	};
-	static bool isRunning();
-	static void start();
-	static void stop();
+
+	spvwallet(std::string path = "spvwallet", bool startInBackgroundIfNotRunning = true);
+
+	std::string version();
+	void start(bool background);
+
+	std::string currentaddress();
+
+	bool isRunning();
+
+private:
+	std::string prefix;
+
+	std::string command(std::string commands, bool output = false, bool wait = true, void ** stream_pointer = 0);
 };
