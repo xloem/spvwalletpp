@@ -5,6 +5,10 @@
 using namespace std;
 using json = nlohmann::json;
 
+spvwallet::configuration::configuration()
+: network(BITCOIN), mnemonicDate(0), tor(false)
+{ }
+
 #include <time.h>
 uint64_t from_iso8601(string datetime)
 {
@@ -16,11 +20,21 @@ uint64_t from_iso8601(string datetime)
 #include <string>
 #include <iomanip>
 #include <iostream>
-string process(string command, bool output = false, bool wait = true, FILE ** stream_pointer = 0)
+string process(std::vector<string> const & commands, bool output = false, bool wait = true, FILE ** stream_pointer = 0)
 {
 	string result;
 	char buffer[1024];
-	FILE *stream = popen(command.c_str(), "r");
+	std::string command_string;
+	for (auto command : commands) {
+		size_t position = 0;
+		while ((position = command.find("'", position)) != string::npos) {
+			command.replace(position, 1, "'\"'\"'");
+			position += 5;
+		}
+		command_string += "'" + command + "' ";
+	}
+	command_string += "2>&1";
+	FILE *stream = popen(command_string.c_str(), "r");
 	if (stream_pointer) { *stream_pointer = stream; }
 	while (fgets(buffer, sizeof(buffer), stream) != 0) {
 		if (output) {
@@ -33,9 +47,10 @@ string process(string command, bool output = false, bool wait = true, FILE ** st
 	return result;
 }
 
-string spvwallet::command(string commands, bool output, bool wait, void ** stream_pointer)
+string spvwallet::command(vector<string> commands, bool output, bool wait, void ** stream_pointer)
 {
-	string result = process(prefix + commands + " 2>&1", output, wait, (FILE**)stream_pointer);
+	commands.insert(commands.begin(), prefix);
+	string result = process(commands, output, wait, (FILE**)stream_pointer);
 
 	// remove trailing whitespace
 	do {
@@ -56,12 +71,16 @@ string spvwallet::command(string commands, bool output, bool wait, void ** strea
 }
 
 #include <unistd.h>
-void spvwallet::start(bool background)
+void spvwallet::start(bool background, spvwallet::configuration configuration)
 {
+	string commands = "start";
+	if (configuration.dataDirectory.size()) {
+		commands += " --datadir='" + configuration.dataDirectory + "'";
+	}
 	if (background) {
-		command("start", false, false); 
+		command({"start"}, false, false); 
 	} else {
-		command("start", true);
+		command({"start"}, true);
 	}
 }
 
@@ -83,38 +102,38 @@ void spvwallet::error::makeAndThrow(string description)
 	}
 }
 
-spvwallet::spvwallet(std::string path, bool startInBackgroundIfNotRunning)
-: prefix(path + " ")
+spvwallet::spvwallet(std::string path, bool startInBackgroundIfNotRunning, spvwallet::configuration startConfiguration)
+: prefix(path)
 {
 	if (startInBackgroundIfNotRunning) {
 		try {
 			currentaddress();
 		} catch (error::unavailable &) {
-			start(true);
+			start(true, startConfiguration);
 		}
 	}
 }
 
 string spvwallet::version()
 {
-	return command("version");
+	return command({"version"});
 }
 
 string spvwallet::currentaddress()
 {
-	return command("currentaddress");
+	return command({"currentaddress"});
 }
 
 uint64_t spvwallet::balance()
 {
-	auto balances = json::parse(command("balance"));
+	auto balances = json::parse(command({"balance"}));
 	return balances["confirmed"].get<uint64_t>() + balances["unconfirmed"].get<uint64_t>();
 }
 
 std::vector<spvwallet::transaction> spvwallet::transactions()
 {
 	std::vector<transaction> result;
-	auto transactions = json::parse(command("transactions"));
+	auto transactions = json::parse(command({"transactions"}));
 	for (auto tjson : transactions)
 	{
 		transaction t;

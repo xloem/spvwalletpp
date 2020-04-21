@@ -7,6 +7,21 @@
 class spvwallet
 {
 public:
+	struct configuration
+	{
+		configuration();
+		std::string dataDirectory;
+		enum
+		{
+			BITCOIN,
+			TESTNET,
+			REGTEST
+		} network;
+		std::string mnemonic; // may be used to recreate a wallet
+		uint64_t mnemonicDate; // to speed syncing
+		std::string trustedpeer;
+		bool tor;
+	};
 	struct transaction
 	{
 		std::string txid;
@@ -31,10 +46,10 @@ public:
 		using error::error;
 	};
 
-	spvwallet(std::string path = "spvwallet", bool startInBackgroundIfNotRunning = true);
+	spvwallet(std::string path = "spvwallet", bool startInBackgroundIfNotRunning = true, configuration startConfiguration = {});
 
 	std::string version();
-	void start(bool background);
+	void start(bool background, configuration _configuration);
 
 	std::string currentaddress();
 	uint64_t balance();
@@ -45,5 +60,5 @@ public:
 private:
 	std::string prefix;
 
-	std::string command(std::string commands, bool output = false, bool wait = true, void ** stream_pointer = 0);
+	std::string command(std::vector<std::string> commands, bool output = false, bool wait = true, void ** stream_pointer = 0);
 };
