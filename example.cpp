@@ -20,4 +20,17 @@ int main()
 		cout << "    height: " << t.height << endl;
 		cout << "    watchOnly: " << t.watchOnly << endl;
 	}
+	cout << "Peers:" << endl;
+	for (auto p : spv.peers()) {
+		cout << "  " << p.address << endl;
+		cout << "    bytesSent: " << p.bytesSent << endl;
+		cout << "    bytesReceived: " << p.bytesReceived << endl;
+		cout << "    connected: " << p.connected << endl;
+		cout << "    id: " << p.id << endl;
+		cout << "    lastBlock: " << p.lastBlock << endl;
+		cout << "    protocolVersion: " << p.protocolVersion << endl;
+		cout << "    services: " << p.services << endl;
+		cout << "    userAgent: " << p.userAgent << endl;
+		cout << "    timeConnected: " << p.timeConnected << endl;
+	}
 }

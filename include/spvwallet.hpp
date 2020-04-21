@@ -31,6 +31,19 @@ public:
 		uint64_t height;
 		bool watchOnly;
 	};
+	struct peer
+	{
+		std::string address;
+		uint64_t bytesSent;
+		uint64_t bytesReceived;
+		bool connected;
+		uint64_t id;
+		uint64_t lastBlock;
+		uint64_t protocolVersion;
+		std::string services;
+		std::string userAgent;
+		uint64_t timeConnected;
+	};
 
 	class error : public std::runtime_error
 	{
@@ -47,18 +60,22 @@ public:
 	};
 
 	spvwallet(std::string path = "spvwallet", bool startInBackgroundIfNotRunning = true, configuration startConfiguration = {});
+	~spvwallet();
 
 	std::string version();
 	void start(bool background, configuration _configuration);
+	void stop();
 
 	std::string currentaddress();
 	uint64_t balance();
 	std::vector<transaction> transactions();
+	std::vector<peer> peers();
 
 	bool isRunning();
 
 private:
 	std::string prefix;
+	uint64_t pid;
 
-	std::string command(std::vector<std::string> commands, bool output = false, bool wait = true, void ** stream_pointer = 0);
+	std::string command(std::vector<std::string> commands, bool output = false, std::string return_at_output = {}, uint64_t * pid_pointer = 0);
 };

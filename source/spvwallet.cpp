@@ -26,39 +26,44 @@ string to_iso8601(uint64_t timestamp)
 }
 
 #include <string>
-#include <iomanip>
+#include <subprocess.hpp>
+//#include <iomanip>
 #include <iostream>
-string process(std::vector<string> const & commands, bool output = false, bool wait = true, FILE ** stream_pointer = 0)
+string process(std::vector<string> const & commands, bool output = false, string return_at_output = {}, pid_t * pid_pointer = 0)
 {
-	string result;
-	char buffer[1024];
-	std::string command_string;
-	for (auto command : commands) {
-		size_t position = 0;
-		while ((position = command.find("'", position)) != string::npos) {
-			command.replace(position, 1, "'\"'\"'");
-			position += 5;
+	auto process = subprocess::Popen(commands, output ? subprocess::output{stdout} : subprocess::output{subprocess::PIPE}, output ? subprocess::error{stderr} : subprocess::error{subprocess::PIPE});
+	if (pid_pointer) { *pid_pointer = process.pid(); }
+	if (return_at_output.size() == 0) {
+		process.wait();
+	} else {
+		string result;
+		size_t idx = 0;
+		char buffer[256] = { 0 };
+		while (result.find(return_at_output, idx) == string::npos) {
+			idx = result.size() - return_at_output.size() + 1;
+			if (0 == fgets(buffer, sizeof(buffer), process.output())) {
+				// throw error maybe?
+				break;
+			}
+			
+			result.append(buffer);
+			if (output) {
+				cout << buffer;
+			}
 		}
-		command_string += "'" + command + "' ";
-	}
-	command_string += "2>&1";
-	FILE *stream = popen(command_string.c_str(), "r");
-	if (stream_pointer) { *stream_pointer = stream; }
-	while (fgets(buffer, sizeof(buffer), stream) != 0) {
 		if (output) {
-			cerr << buffer;
+			cout << endl;
 		}
-		result.append(buffer);
-		if (!wait) { return result; }
+		return result;
 	}
-	pclose(stream);
-	return result;
+	auto results = process.communicate();
+	return string(results.second.buf.data(), results.second.length) + string(results.first.buf.data(), results.first.length);
 }
 
-string spvwallet::command(vector<string> commands, bool output, bool wait, void ** stream_pointer)
+string spvwallet::command(vector<string> commands, bool output, string return_at_output, uint64_t * pid_pointer)
 {
 	commands.insert(commands.begin(), prefix);
-	string result = process(commands, output, wait, (FILE**)stream_pointer);
+	string result = process(commands, output, return_at_output, (pid_t*)pid_pointer);
 
 	// remove trailing whitespace
 	do {
@@ -112,7 +117,7 @@ void spvwallet::start(bool background, spvwallet::configuration configuration)
 	}
 	commands.push_back("--feeapi=");
 	if (background) {
-		command(commands, false, false); 
+		command(commands, false, "[Press Ctrl+C to exit]", &pid); 
 	} else {
 		command(commands, true);
 	}
@@ -137,7 +142,7 @@ void spvwallet::error::makeAndThrow(string description)
 }
 
 spvwallet::spvwallet(std::string path, bool startInBackgroundIfNotRunning, spvwallet::configuration startConfiguration)
-: prefix(path)
+: prefix(path), pid(0)
 {
 	if (startInBackgroundIfNotRunning) {
 		try {
@@ -145,6 +150,20 @@ spvwallet::spvwallet(std::string path, bool startInBackgroundIfNotRunning, spvwa
 		} catch (error::unavailable &) {
 			start(true, startConfiguration);
 		}
+	}
+}
+spvwallet::~spvwallet()
+{
+	if (pid) { stop(); }
+}
+
+void spvwallet::stop()
+{
+	if (pid) {
+		::kill(pid, SIGINT);
+		pid = 0;
+	} else {
+		command({"stop"});
 	}
 }
 
@@ -178,6 +197,28 @@ std::vector<spvwallet::transaction> spvwallet::transactions()
 		t.height = tjson["height"].get<uint64_t>();
 		t.watchOnly = tjson["watchOnly"].get<bool>();
 		result.emplace_back(t);
+	}
+	return result;
+}
+
+std::vector<spvwallet::peer> spvwallet::peers()
+{
+	std::vector<peer> result;
+	auto peers = json::parse(command({"peers"}));
+	for (auto pjson : peers)
+	{
+		peer p;
+		p.address = pjson["address"].get<string>();
+		p.bytesSent = pjson["bytesSent"].get<uint64_t>();
+		p.bytesReceived = pjson["bytesReceived"].get<uint64_t>();
+		p.connected = pjson["connected"].get<bool>();
+		p.id = pjson["id"].get<uint64_t>();
+		p.lastBlock = pjson["lastBlock"].get<uint64_t>();
+		p.protocolVersion = pjson["protocolVersion"].get<uint64_t>();
+		p.services = pjson["services"].get<string>();
+		p.userAgent = pjson["userAgent"].get<string>();
+		p.timeConnected = from_iso8601(pjson["timeConnected"].get<string>());
+		result.emplace_back(p);
 	}
 	return result;
 }

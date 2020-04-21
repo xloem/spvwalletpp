@@ -12,6 +12,13 @@ set (JSON_BuildTests OFF CACHE INTERNAL "")
 set (JSON_Install OFF CACHE INTERNAL "")
 add_subdirectory (dependencies/json)
 
+### cpp-subprocess
+set (BUILD_TESTING OFF CACHE INTERNAL "")
+add_subdirectory (dependencies/cpp-subprocess)
+set (CPPSUBPROCESS_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/cpp-subprocess)
+find_package (Threads)
+set (CPPSUBPROCESS_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+
 ### begin go stuff
 find_library (golang REQUIRED)
 set (GOPATH ${CMAKE_CURRENT_BINARY_DIR}/go)
@@ -30,9 +37,10 @@ add_custom_command(OUTPUT ${SPVWALLET_BINARY}
 
 add_library (${SPVWALLETPP_LIBRARIES} source/spvwallet.cpp "${SPVWALLETPP_INCLUDE_DIRS}/spvwallet.hpp" ${SPVWALLET_BINARY})
 
-target_link_libraries (${SPVWALLETPP_LIBRARIES} ${CPR_LIBRARIES})
-target_link_libraries (${SPVWALLETPP_LIBRARIES} PRIVATE nlohmann_json::nlohmann_json)
-target_include_directories (${SPVWALLETPP_LIBRARIES} PRIVATE ${CPR_INCLUDE_DIRS} PRIVATE ${SPVWALLETPP_INCLUDE_DIRS})
+#target_link_libraries (${SPVWALLETPP_LIBRARIES} ${CPR_LIBRARIES})
+target_link_libraries (${SPVWALLETPP_LIBRARIES} PRIVATE nlohmann_json::nlohmann_json PRIVATE ${CPPSUBPROCESS_LIBRARIES})
+#target_include_directories (${SPVWALLETPP_LIBRARIES} PRIVATE ${CPR_INCLUDE_DIRS})
+target_include_directories (${SPVWALLETPP_LIBRARIES} PRIVATE ${CPPSUBPROCESS_INCLUDE_DIRS} PRIVATE ${SPVWALLETPP_INCLUDE_DIRS})
 
 install (TARGETS ${SPVWALLETPP_LIBRARIES} RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
 install (FILES include/siaskynet.hpp DESTINATION include)

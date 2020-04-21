@@ -7,3 +7,6 @@
 [submodule "dependencies/json"]
 	path = dependencies/json
 	url = git@github.com:nlohmann/json
+[submodule "dependencies/cpp-subprocess"]
+	path = dependencies/cpp-subprocess
+	url = git@github.com:arun11299/cpp-subprocess.git
