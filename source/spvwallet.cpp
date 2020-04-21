@@ -5,21 +5,25 @@ using namespace std;
 
 #include <string>
 #include <iomanip>
-string execute(string cmd)
+#include <iostream>
+string execute(string cmd, bool output = false)
 {
 	string result;
 	char buffer[1024];
 	FILE *stream = popen(cmd.c_str(), "r");
 	while (fgets(buffer, sizeof(buffer), stream) != 0) {
+		if (output) {
+			cerr << buffer;
+		}
 		result.append(buffer);
 	}
 	pclose(stream);
 	return result;
 }
 
-string spvwallet(string command)
+string command(string commands, bool output = false)
 {
-	string result = execute("spvwallet " + command);
+	string result = execute("spvwallet " + commands, output);
 	if (result.compare(0, 10, "rpc error:") == 0) {
 		throw spvwallet::error::make(result.substring(10));
 	}
@@ -42,4 +46,9 @@ spvwallet::error spvwallet::error::make(string description)
 	} else {
 		return error(code, description);
 	}
+}
+
+void spvwallet::start()
+{
+	command("start", true);
 }
