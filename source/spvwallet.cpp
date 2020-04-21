@@ -5,6 +5,14 @@
 using namespace std;
 using json = nlohmann::json;
 
+#include <time.h>
+uint64_t from_iso8601(string datetime)
+{
+	struct tm tm;
+	strptime(datetime.c_str(), "%FT%T%z", &tm);
+	return mktime(&tm);
+}
+
 #include <string>
 #include <iomanip>
 #include <iostream>
@@ -97,8 +105,26 @@ string spvwallet::currentaddress()
 	return command("currentaddress");
 }
 
-double spvwallet::balance()
+uint64_t spvwallet::balance()
 {
 	auto balances = json::parse(command("balance"));
-	return balances["confirmed"].get<double>() + balances["unconfirmed"].get<double>();
+	return balances["confirmed"].get<uint64_t>() + balances["unconfirmed"].get<uint64_t>();
+}
+
+std::vector<spvwallet::transaction> spvwallet::transactions()
+{
+	std::vector<transaction> result;
+	auto transactions = json::parse(command("transactions"));
+	for (auto tjson : transactions)
+	{
+		transaction t;
+		t.txid = tjson["txid"].get<string>();
+		t.value = tjson["value"].get<uint64_t>();
+		t.timestamp = from_iso8601(tjson["timestamp"].get<string>());
+		t.confirmations = tjson["confirmations"].get<uint64_t>();
+		t.height = tjson["height"].get<uint64_t>();
+		t.watchOnly = tjson["watchOnly"].get<bool>();
+		result.emplace_back(t);
+	}
+	return result;
 }

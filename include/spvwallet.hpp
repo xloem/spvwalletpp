@@ -2,10 +2,21 @@
 
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 class spvwallet
 {
 public:
+	struct transaction
+	{
+		std::string txid;
+		uint64_t value;
+		uint64_t timestamp;
+		uint64_t confirmations;
+		uint64_t height;
+		bool watchOnly;
+	};
+
 	class error : public std::runtime_error
 	{
 	public:
@@ -26,7 +37,8 @@ public:
 	void start(bool background);
 
 	std::string currentaddress();
-	double balance();
+	uint64_t balance();
+	std::vector<transaction> transactions();
 
 	bool isRunning();
 
