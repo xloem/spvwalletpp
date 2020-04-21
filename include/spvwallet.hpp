@@ -26,6 +26,14 @@ public:
 	{
 		std::string txid;
 		uint64_t value;
+		enum {
+			UNCONFIRMED,
+			PENDING,
+			CONFIRMED,
+			STUCK,
+			DEAD,
+			ERROR
+		} status;
 		uint64_t timestamp;
 		uint64_t confirmations;
 		uint64_t height;
@@ -66,6 +74,7 @@ public:
 	void start(bool background, configuration _configuration);
 	void stop();
 
+	uint64_t chaintip();
 	std::string currentaddress();
 	uint64_t balance();
 	std::vector<transaction> transactions();

@@ -172,6 +172,12 @@ string spvwallet::version()
 	return command({"version"});
 }
 
+uint64_t spvwallet::chaintip()
+{
+	string chaintip = command({"chaintip"});
+	return std::stoull(chaintip);
+}
+
 string spvwallet::currentaddress()
 {
 	return command({"currentaddress"});
@@ -192,6 +198,22 @@ std::vector<spvwallet::transaction> spvwallet::transactions()
 		transaction t;
 		t.txid = tjson["txid"].get<string>();
 		t.value = tjson["value"].get<uint64_t>();
+		auto status = tjson["status"].get<string>();
+		if (status == "UNCONFIRMED") {
+			t.status = transaction::UNCONFIRMED;
+		} else if (status == "PENDING") {
+			t.status = transaction::PENDING;
+		} else if (status == "CONFIRMED") {
+			t.status = transaction::CONFIRMED;
+		} else if (status == "STUCK") {
+			t.status = transaction::STUCK;
+		} else if (status == "DEAD") {
+			t.status = transaction::DEAD;
+		} else if (status == "ERROR") {
+			t.status = transaction::ERROR;
+		} else {
+			t.status = (decltype(t.status))-1;
+		}
 		t.timestamp = from_iso8601(tjson["timestamp"].get<string>());
 		t.confirmations = tjson["confirmations"].get<uint64_t>();
 		t.height = tjson["height"].get<uint64_t>();
