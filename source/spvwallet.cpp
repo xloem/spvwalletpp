@@ -11,7 +11,7 @@ spvwallet::configuration::configuration()
 : network(MAIN),
   walletCreationDate(0),
   tor(false),
-  binary("spvwallet")
+  binary(SPVWALLET_BINARY/*"spvwallet"*/)
 { }
 
 string spvwallet::command(vector<string> commands, bool output, string return_at_output, unique_ptr<subprocess::Popen> * pointer)

@@ -34,15 +34,15 @@ add_subdirectory(dependencies/SQLiteCpp)
 set (SQLITECPP_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/SQLiteCpp/include)
 set (SQLITECPP_LIBRARIES SQLiteCpp sqlite3 dl)
 
+### MAIN: libspvwallet++
 add_library (${SPVWALLETPP_LIBRARIES} source/spvwallet.cpp source/spvwallet_database.cpp "${SPVWALLETPP_INCLUDE_DIRS}/spvwallet.hpp" ${SPVWALLET_BINARY})
+install (PROGRAMS ${SPVWALLET_BINARY} DESTINATION ${CMAKE_INSTALL_LIBDIR} RENAME spvwallet++.go)
+install (TARGETS ${SPVWALLETPP_LIBRARIES} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-#target_link_libraries (${SPVWALLETPP_LIBRARIES} ${CPR_LIBRARIES})
+add_definitions(-DSPVWALLET_BINARY="${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/spvwallet++.go")
+
 target_link_libraries (${SPVWALLETPP_LIBRARIES} PRIVATE nlohmann_json::nlohmann_json PRIVATE ${CPPSUBPROCESS_LIBRARIES} PRIVATE ${SQLITECPP_LIBRARIES})
-#target_include_directories (${SPVWALLETPP_LIBRARIES} PRIVATE ${CPR_INCLUDE_DIRS})
 target_include_directories (${SPVWALLETPP_LIBRARIES} PRIVATE ${CPPSUBPROCESS_INCLUDE_DIRS} PRIVATE ${SPVWALLETPP_INCLUDE_DIRS} PRIVATE ${SQLITECPP_INCLUDE_DIRS})
-
-install (TARGETS ${SPVWALLETPP_LIBRARIES} RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
-install (FILES include/siaskynet.hpp DESTINATION include)
 
 add_executable (spvwallet++_example example.cpp)
 target_link_libraries (spvwallet++_example ${SPVWALLETPP_LIBRARIES})
