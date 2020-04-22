@@ -18,7 +18,7 @@ std::string to_iso8601(uint64_t timestamp)
 	time_t timestamp_proper = timestamp;
 	struct tm * tm_p = gmtime(&timestamp_proper);
 	static thread_local char buffer[1024];
-	strftime(buffer, sizeof(buffer), "%FT%T%z", tm_p);
+	strftime(buffer, sizeof(buffer), "%FT%TZ", tm_p);
 	return buffer;
 }
 
