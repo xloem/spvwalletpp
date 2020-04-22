@@ -14,7 +14,6 @@ int main()
 
 	cout << "SPVWallet version: " << spv.version() << endl;
 	cout << "Current address: " << spv.currentaddress() << endl;
-	cout << "Balance: " << spv.balance() << endl;
 	uint64_t chaintip;
 	uint64_t maxtip = 0;
 	std::vector<spvwallet::peer> peers;
@@ -30,6 +29,7 @@ int main()
 		cout << "\rChain tip: " << chaintip << " / " << maxtip << " (" << peers.size() << " peers)  " << flush;
 	} while (maxtip > chaintip || peers.size() == 0 || maxtip == 0);
 	cout << endl;
+	cout << "Balance: " << spv.balance() << endl;
 	cout << "Transactions:" << endl;
 	for (auto t : spv.transactions()) {
 		cout << "  " << t.txid << endl;
