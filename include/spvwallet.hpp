@@ -13,9 +13,9 @@ public:
 		std::string dataDirectory;
 		enum
 		{
-			BITCOIN,
-			TESTNET,
-			REGTEST
+			MAIN,
+			TEST,
+			REGRESSION
 		} network;
 		std::string mnemonic; // may be used to recreate a wallet
 		uint64_t mnemonicDate; // to speed syncing, earliest transaction

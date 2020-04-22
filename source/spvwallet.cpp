@@ -6,7 +6,7 @@ using namespace std;
 using json = nlohmann::json;
 
 spvwallet::configuration::configuration()
-: network(BITCOIN), mnemonicDate(0), tor(false)
+: network(MAIN), mnemonicDate(0), tor(false)
 { }
 
 #include <time.h>
@@ -92,12 +92,12 @@ void spvwallet::start(bool background, spvwallet::configuration configuration)
 	}
 	switch (configuration.network)
 	{
-	case spvwallet::configuration::BITCOIN:
+	case spvwallet::configuration::MAIN:
 		break;
-	case spvwallet::configuration::TESTNET:
+	case spvwallet::configuration::TEST:
 		commands.push_back("--testnet");
 		break;
-	case spvwallet::configuration::REGTEST:
+	case spvwallet::configuration::REGRESSION:
 		commands.push_back("--regtest");
 		break;
 	default:
