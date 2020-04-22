@@ -1,6 +1,7 @@
-[submodule "spvwallet-go"]
+[submodule "dependencies/spvwallet-go"]
 	path = dependencies/spvwallet-go
-	url = https://github.com/OpenBazaar/spvwallet
+	url = https://github.com/xloem/spvwallet.git
+	branch = watchOnlyTransactions
 [submodule "dependencies/grpc"]
 	path = dependencies/grpc
 	url = https://github.com/grpc/grpc.git
