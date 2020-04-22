@@ -192,12 +192,23 @@ uint64_t spvwallet::balance()
 
 void spvwallet::addwatchedaddress(string address)
 {
+	for (auto & existing : listaddresses()) {
+		// if a wallet address is added as a watched address,
+		// its future transactions won't be used in calculations
+		if (address == existing) { return; }
+	}
 	try {
 		command({"addwatchedscript", address});
 	} catch (error::internal &result) {
 		if (result.description == "grpc: error while marshaling: proto: Marshal called with nil") { return; }
 		throw;
 	}
+}
+
+std::vector<string> spvwallet::listaddresses()
+{
+	auto addresses = command({"listaddresses"});
+	return subprocess::util::split(addresses, "\r\n");
 }
 
 std::vector<spvwallet::transaction> spvwallet::transactions()

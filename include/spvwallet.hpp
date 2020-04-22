@@ -82,6 +82,7 @@ public:
 	std::string currentaddress();
 	uint64_t balance();
 	void addwatchedaddress(std::string address);
+	std::vector<std::string> listaddresses();
 	std::vector<transaction> transactions();
 	std::vector<peer> peers();
 
