@@ -24,6 +24,19 @@ string spvwallet::raw(string transaction)
 	return query.getColumn(0).getString();
 }
 
+/*
+void spvwallet::broadcast(string transaction, string raw)
+{
+	auto & database = this->database();
+	SQLite::Statement insert_stxos(database, "INSERT INTO stxos VALUES(:outpoint, 0, 0, '', 1, 0, :transaction)");
+	SQLite::Statement insert_txns(database, "INSERT INTO txns VALUES(:transaction, 0, 0, 0, 1, :raw)");
+	// set :transaction to hash of :raw
+	// set :outpoint to "${transaction}:broadcast"
+	// execute in a transaction
+	// reboot server
+}
+*/
+
 /* todo convert address to scriptPubKey portion
 vector<string> spvwallet::transactions_received(string publicKey)
 {

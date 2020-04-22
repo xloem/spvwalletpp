@@ -96,6 +96,7 @@ public:
 	// below features require access to the database, which means the dataDirectory must be specified in a call to start()
 	
 	std::string raw(std::string transaction);
+	//void broadcast(std::string transaction, std::string raw);
 	//uint64_t balance(std::string publicKey);
 	//std::vector<std::string> transactions_received(std::string publicKey);
 	//std::vector<std::string> transactions_sent(std::string publicKey);
