@@ -29,19 +29,20 @@ string to_iso8601(uint64_t timestamp)
 #include <subprocess.hpp>
 //#include <iomanip>
 #include <iostream>
-string process(std::vector<string> const & commands, bool output = false, string return_at_output = {}, pid_t * pid_pointer = 0)
+string process(std::vector<string> const & commands, bool output = false, string return_at_output = {}, unique_ptr<subprocess::Popen> * pointer = 0)
 {
-	auto process = subprocess::Popen(commands, output ? subprocess::output{stdout} : subprocess::output{subprocess::PIPE}, output ? subprocess::error{stderr} : subprocess::error{subprocess::PIPE});
-	if (pid_pointer) { *pid_pointer = process.pid(); }
+	std::unique_ptr<subprocess::Popen> process(new subprocess::Popen(commands, output ? subprocess::output{stdout} : subprocess::output{subprocess::PIPE}, output ? subprocess::error{stderr} : subprocess::error{subprocess::PIPE}));
+	string result;
 	if (return_at_output.size() == 0) {
-		process.wait();
+		process->wait();
+		auto results = process->communicate();
+		result = string(results.second.buf.data(), results.second.length) + string(results.first.buf.data(), results.first.length);
 	} else {
-		string result;
 		size_t idx = 0;
 		char buffer[256] = { 0 };
 		while (result.find(return_at_output, idx) == string::npos) {
 			idx = result.size() - return_at_output.size() + 1;
-			if (0 == fgets(buffer, sizeof(buffer), process.output())) {
+			if (0 == fgets(buffer, sizeof(buffer), process->output())) {
 				// throw error maybe?
 				break;
 			}
@@ -54,16 +55,15 @@ string process(std::vector<string> const & commands, bool output = false, string
 		if (output) {
 			cout << endl;
 		}
-		return result;
 	}
-	auto results = process.communicate();
-	return string(results.second.buf.data(), results.second.length) + string(results.first.buf.data(), results.first.length);
+	if (pointer) *pointer = std::move(process);
+	return result;
 }
 
-string spvwallet::command(vector<string> commands, bool output, string return_at_output, uint64_t * pid_pointer)
+string spvwallet::command(vector<string> commands, bool output, string return_at_output, unique_ptr<subprocess::Popen> * pointer)
 {
 	commands.insert(commands.begin(), prefix);
-	string result = process(commands, output, return_at_output, (pid_t*)pid_pointer);
+	string result = process(commands, output, return_at_output, pointer);
 
 	// remove trailing whitespace
 	do {
@@ -115,9 +115,10 @@ void spvwallet::start(bool background, spvwallet::configuration configuration)
 	if (configuration.tor) {
 		commands.push_back("--tor");
 	}
+	//commands.push_back("-v");
 	commands.push_back("--feeapi=");
 	if (background) {
-		command(commands, false, "[Press Ctrl+C to exit]", &pid); 
+		command(commands, false, "[Press Ctrl+C to exit]", &this->background); 
 	} else {
 		command(commands, true);
 	}
@@ -144,7 +145,7 @@ void spvwallet::error::makeAndThrow(string description)
 }
 
 spvwallet::spvwallet(std::string path, bool startInBackgroundIfNotRunning, spvwallet::configuration startConfiguration)
-: prefix(path), pid(0)
+: prefix(path)
 {
 	if (startInBackgroundIfNotRunning) {
 		if (!running()) {
@@ -154,14 +155,14 @@ spvwallet::spvwallet(std::string path, bool startInBackgroundIfNotRunning, spvwa
 }
 spvwallet::~spvwallet()
 {
-	if (pid) { stop(); }
+	if (background) { stop(); }
 }
 
 void spvwallet::stop()
 {
-	if (pid) {
-		::kill(pid, SIGINT);
-		pid = 0;
+	if (background) {
+		background->kill(SIGINT);
+		background.reset();
 	} else {
 		command({"stop"});
 	}

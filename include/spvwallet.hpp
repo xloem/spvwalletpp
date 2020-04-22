@@ -1,8 +1,11 @@
 #pragma once
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+namespace subprocess { class Popen; }
 
 class spvwallet
 {
@@ -88,7 +91,7 @@ public:
 
 private:
 	std::string prefix;
-	uint64_t pid;
+	std::unique_ptr<subprocess::Popen> background;
 
-	std::string command(std::vector<std::string> commands, bool output = false, std::string return_at_output = {}, uint64_t * pid_pointer = 0);
+	std::string command(std::vector<std::string> commands, bool output = false, std::string return_at_output = {}, std::unique_ptr<subprocess::Popen> * pointer = 0);
 };
