@@ -11,3 +11,6 @@
 [submodule "dependencies/cpp-subprocess"]
 	path = dependencies/cpp-subprocess
 	url = git@github.com:arun11299/cpp-subprocess.git
+[submodule "dependencies/SQLiteCpp"]
+	path = dependencies/SQLiteCpp
+	url = git@github.com:SRombauts/SQLiteCpp.git
