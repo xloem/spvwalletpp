@@ -28,7 +28,7 @@ public:
 	struct transaction
 	{
 		std::string txid;
-		uint64_t value;
+		int64_t value;
 		enum {
 			UNCONFIRMED,
 			PENDING,
