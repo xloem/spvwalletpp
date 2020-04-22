@@ -6,7 +6,7 @@ using namespace std;
 using json = nlohmann::json;
 
 spvwallet::configuration::configuration()
-: network(MAIN), mnemonicDate(0), tor(false)
+: network(MAIN), walletCreationDate(0), tor(false)
 { }
 
 #include <time.h>
@@ -105,9 +105,9 @@ void spvwallet::start(bool background, spvwallet::configuration configuration)
 	};
 	if (configuration.mnemonic.size()) {
 		commands.push_back("--mnemonic=" + configuration.mnemonic);
-		if (configuration.mnemonicDate) {
-			commands.push_back("--walletcreationdate=" + to_iso8601(configuration.mnemonicDate));
-		}
+	}
+	if (configuration.walletCreationDate) {
+		commands.push_back("--walletcreationdate=" + to_iso8601(configuration.walletCreationDate));
 	}
 	if (configuration.trustedPeer.size()) {
 		commands.push_back("--trustedpeer=" + configuration.trustedPeer);

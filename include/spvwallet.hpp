@@ -18,7 +18,7 @@ public:
 			REGRESSION
 		} network;
 		std::string mnemonic; // may be used to recreate a wallet
-		uint64_t mnemonicDate; // to speed syncing, earliest transaction
+		uint64_t walletCreationDate; // to speed syncing, earliest transaction
 		std::string trustedPeer;
 		bool tor;
 	};
