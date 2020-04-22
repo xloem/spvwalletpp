@@ -10,10 +10,20 @@ int main()
 {
 	spvwallet spv(false);
 	spvwallet::configuration configuration;
-	configuration.dataDirectory = "test";
+	configuration.dataDirectory = "test-watch";
 	spv.start(true, configuration);
 
-	spv.addwatchedaddress("1E3J3gjeRuq9R9GgE96g7BSVmZJNgZMqWc");
+	std::vector<std::string> watchedaddresses = {
+		"1E3J3gjeRuq9R9GgE96g7BSVmZJNgZMqWc",
+		"13eZkQTZCFyEt8Ch3SkX1fubCbK28gzwNx",
+		"13VRTkYjm57YVnKcdEnkBoGJw9ToWMKzW3",
+		"1217dUx97zxsE2zEYwauj9dZspYP4X2uLQ"
+	};
+
+	for (auto address : watchedaddresses) {
+		spv.addwatchedaddress(address);
+	}
+	//spv.resyncblockchain(1587472633);
 
 	cout << "SPVWallet version: " << spv.version() << endl;
 	cout << "Current address: " << spv.currentaddress() << endl;
@@ -41,6 +51,8 @@ int main()
 		cout << "    confirmations: " << t.confirmations << endl;
 		cout << "    height: " << t.height << endl;
 		cout << "    watchOnly: " << t.watchOnly << endl;
+		auto data = spv.raw(t.txid);
+		cout << "    size: " << data.size() << endl;
 	}
 	/*
 	cout << "Peers:" << endl;

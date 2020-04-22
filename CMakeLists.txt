@@ -34,7 +34,7 @@ add_subdirectory(dependencies/SQLiteCpp)
 set (SQLITECPP_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/SQLiteCpp/include)
 set (SQLITECPP_LIBRARIES SQLiteCpp sqlite3 dl)
 
-add_library (${SPVWALLETPP_LIBRARIES} source/spvwallet.cpp "${SPVWALLETPP_INCLUDE_DIRS}/spvwallet.hpp" ${SPVWALLET_BINARY})
+add_library (${SPVWALLETPP_LIBRARIES} source/spvwallet.cpp source/spvwallet_database.cpp "${SPVWALLETPP_INCLUDE_DIRS}/spvwallet.hpp" ${SPVWALLET_BINARY})
 
 #target_link_libraries (${SPVWALLETPP_LIBRARIES} ${CPR_LIBRARIES})
 target_link_libraries (${SPVWALLETPP_LIBRARIES} PRIVATE nlohmann_json::nlohmann_json PRIVATE ${CPPSUBPROCESS_LIBRARIES} PRIVATE ${SQLITECPP_LIBRARIES})

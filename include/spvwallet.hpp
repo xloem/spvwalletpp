@@ -6,6 +6,7 @@
 #include <vector>
 
 namespace subprocess { class Popen; }
+namespace SQLite { class Database; }
 
 class spvwallet
 {
@@ -92,10 +93,21 @@ public:
 
 	bool running();
 
+	// below features require access to the database, which means the dataDirectory must be specified in a call to start()
+	
+	std::string raw(std::string transaction);
+	//uint64_t balance(std::string publicKey);
+	//std::vector<std::string> transactions_received(std::string publicKey);
+	//std::vector<std::string> transactions_sent(std::string publicKey);
+
 private:
 	std::string prefix;
 	std::unique_ptr<subprocess::Popen> background;
+	struct database_struct;
+	std::unique_ptr<database_struct> _database;
 	std::string repository_path;
+
+	SQLite::Database & database();
 
 	std::string command(std::vector<std::string> commands, bool output = false, std::string return_at_output = {}, std::unique_ptr<subprocess::Popen> * pointer = 0);
 };

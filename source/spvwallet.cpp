@@ -237,7 +237,7 @@ vector<spvwallet::peer> spvwallet::peers()
 
 void spvwallet::resyncblockchain(uint64_t timestamp)
 {
-	command({"resyncblockchain", to_iso8601(timestamp)});
+	auto result = command({"resyncblockchain", to_iso8601(timestamp)});
 }
 
 bool spvwallet::running()

@@ -7,13 +7,13 @@
 #endif
 
 #include <time.h>
-uint64_t from_iso8601(std::string datetime)
+static uint64_t from_iso8601(std::string datetime)
 {
 	struct tm tm;
 	strptime(datetime.c_str(), "%FT%T%z", &tm);
 	return mktime(&tm);
 }
-std::string to_iso8601(uint64_t timestamp)
+static std::string to_iso8601(uint64_t timestamp)
 {
 	time_t timestamp_proper = timestamp;
 	struct tm * tm_p = gmtime(&timestamp_proper);
@@ -24,7 +24,7 @@ std::string to_iso8601(uint64_t timestamp)
 
 #include <subprocess.hpp>
 #include <iostream>
-std::string process(std::vector<std::string> const & commands, bool output = false, std::string return_at_output = {}, std::unique_ptr<subprocess::Popen> * pointer = 0)
+static std::string process(std::vector<std::string> const & commands, bool output = false, std::string return_at_output = {}, std::unique_ptr<subprocess::Popen> * pointer = 0)
 {
 	std::unique_ptr<subprocess::Popen> process(new subprocess::Popen(commands, output ? subprocess::output{stdout} : subprocess::output{subprocess::PIPE}, output ? subprocess::error{stderr} : subprocess::error{subprocess::PIPE}));
 	std::string result;
@@ -54,3 +54,11 @@ std::string process(std::vector<std::string> const & commands, bool output = fal
 	if (pointer) *pointer = move(process);
 	return result;
 }
+
+
+#include <SQLiteCpp/SQLiteCpp.h>
+
+struct spvwallet::database_struct
+{
+	SQLite::Database database;
+};
