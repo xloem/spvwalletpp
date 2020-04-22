@@ -124,7 +124,7 @@ void spvwallet::start(bool background, spvwallet::configuration configuration)
 }
 
 spvwallet::error::error(string code, string description)
-: runtime_error(code + ": " + description)
+: runtime_error(code + ": " + description), code(code), description(description)
 { }
 
 void spvwallet::error::makeAndThrow(string description)
@@ -133,9 +133,11 @@ void spvwallet::error::makeAndThrow(string description)
 	auto codestart = description.find(" code = ");
 	auto descstart = description.find(" desc = ");
 	auto code = description.substr(codestart + 8, descstart - codestart - 8);
-	auto desc = description.substr(descstart + 8);
+	description = description.substr(descstart + 8);
 	if (code == "Unavailable") {
 		throw unavailable(code, description);
+	} else if (code == "Internal") {
+		throw internal(code, description);
 	} else {
 		throw error(code, description);
 	}
@@ -185,6 +187,16 @@ uint64_t spvwallet::balance()
 {
 	auto balances = json::parse(command({"balance"}));
 	return balances["confirmed"].get<uint64_t>() + balances["unconfirmed"].get<uint64_t>();
+}
+
+void spvwallet::addwatchedaddress(string address)
+{
+	try {
+		command({"addwatchedscript", address});
+	} catch (error::internal &result) {
+		if (result.description == "grpc: error while marshaling: proto: Marshal called with nil") { return; }
+		throw;
+	}
 }
 
 std::vector<spvwallet::transaction> spvwallet::transactions()

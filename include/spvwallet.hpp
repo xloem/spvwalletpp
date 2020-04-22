@@ -59,13 +59,14 @@ public:
 		error(std::string code, std::string description);
 		static void makeAndThrow(std::string description);
 
+		std::string const code;
+		std::string const description;
+
 		class unavailable;
+		class internal;
 	};
-	class error::unavailable : public error
-	{
-	public:
-		using error::error;
-	};
+	class error::unavailable : public error { public: using error::error; };
+	class error::internal : public error { public: using error::error; };
 
 	spvwallet(std::string path = "spvwallet", bool startInBackgroundIfNotRunning = true, configuration startConfiguration = {});
 	~spvwallet();
@@ -77,6 +78,7 @@ public:
 	uint64_t chaintip();
 	std::string currentaddress();
 	uint64_t balance();
+	void addwatchedaddress(std::string address);
 	std::vector<transaction> transactions();
 	std::vector<peer> peers();
 

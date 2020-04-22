@@ -10,6 +10,8 @@ int main()
 {
 	spvwallet spv;
 
+	spv.addwatchedaddress("13eZkQTZCFyEt8Ch3SkX1fubCbK28gzwNx");
+
 	cout << "SPVWallet version: " << spv.version() << endl;
 	cout << "Current address: " << spv.currentaddress() << endl;
 	cout << "Balance: " << spv.balance() << endl;
