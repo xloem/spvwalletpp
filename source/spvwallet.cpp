@@ -145,9 +145,7 @@ spvwallet::spvwallet(std::string path, bool startInBackgroundIfNotRunning, spvwa
 : prefix(path), pid(0)
 {
 	if (startInBackgroundIfNotRunning) {
-		try {
-			currentaddress();
-		} catch (error::unavailable &) {
+		if (!running()) {
 			start(true, startConfiguration);
 		}
 	}
@@ -248,4 +246,14 @@ std::vector<spvwallet::peer> spvwallet::peers()
 void spvwallet::resyncblockchain(uint64_t timestamp)
 {
 	command({"resyncblockchain", to_iso8601(timestamp)});
+}
+
+bool spvwallet::running()
+{
+	try {
+		chaintip();
+		return true;
+	} catch (error::unavailable &) {
+		return false;
+	}
 }

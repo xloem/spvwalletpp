@@ -82,7 +82,7 @@ public:
 
 	void resyncblockchain(uint64_t timestamp);
 
-	//bool isRunning();
+	bool running();
 
 private:
 	std::string prefix;
