@@ -28,7 +28,7 @@ int main()
 			}
 		}
 		cout << "\rChain tip: " << chaintip << " / " << maxtip << " (" << peers.size() << " peers)  " << flush;
-	} while (maxtip > chaintip || peers.size() == 0);
+	} while (maxtip > chaintip || peers.size() == 0 || maxtip == 0);
 	cout << endl;
 	cout << "Transactions:" << endl;
 	for (auto t : spv.transactions()) {
