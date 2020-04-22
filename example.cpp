@@ -8,7 +8,10 @@ using namespace std;
 
 int main()
 {
-	spvwallet spv;
+	spvwallet spv(false);
+	spvwallet::configuration configuration;
+	configuration.dataDirectory = "test";
+	spv.start(true, configuration);
 
 	spv.addwatchedaddress("1E3J3gjeRuq9R9GgE96g7BSVmZJNgZMqWc");
 

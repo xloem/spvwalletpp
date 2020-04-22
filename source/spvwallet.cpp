@@ -1,64 +1,18 @@
 #include <spvwallet.hpp>
 
+#include "utils.hpp"
+
 #include <nlohmann/json.hpp>
 
 using namespace std;
 using json = nlohmann::json;
 
 spvwallet::configuration::configuration()
-: network(MAIN), walletCreationDate(0), tor(false)
+: network(MAIN),
+  walletCreationDate(0),
+  tor(false),
+  binary("spvwallet")
 { }
-
-#include <time.h>
-uint64_t from_iso8601(string datetime)
-{
-	struct tm tm;
-	strptime(datetime.c_str(), "%FT%T%z", &tm);
-	return mktime(&tm);
-}
-string to_iso8601(uint64_t timestamp)
-{
-	time_t timestamp_proper = timestamp;
-	struct tm * tm_p = gmtime(&timestamp_proper);
-	static thread_local char buffer[1024];
-	strftime(buffer, sizeof(buffer), "%FT%T%z", tm_p);
-	return buffer;
-}
-
-#include <string>
-#include <subprocess.hpp>
-//#include <iomanip>
-#include <iostream>
-string process(vector<string> const & commands, bool output = false, string return_at_output = {}, unique_ptr<subprocess::Popen> * pointer = 0)
-{
-	unique_ptr<subprocess::Popen> process(new subprocess::Popen(commands, output ? subprocess::output{stdout} : subprocess::output{subprocess::PIPE}, output ? subprocess::error{stderr} : subprocess::error{subprocess::PIPE}));
-	string result;
-	if (return_at_output.size() == 0) {
-		process->wait();
-		auto results = process->communicate();
-		result = string(results.second.buf.data(), results.second.length) + string(results.first.buf.data(), results.first.length);
-	} else {
-		size_t idx = 0;
-		char buffer[256] = { 0 };
-		while (result.find(return_at_output, idx) == string::npos) {
-			idx = result.size() - return_at_output.size() + 1;
-			if (0 == fgets(buffer, sizeof(buffer), process->output())) {
-				// throw error maybe?
-				break;
-			}
-			
-			result.append(buffer);
-			if (output) {
-				cout << buffer;
-			}
-		}
-		if (output) {
-			cout << endl;
-		}
-	}
-	if (pointer) *pointer = move(process);
-	return result;
-}
 
 string spvwallet::command(vector<string> commands, bool output, string return_at_output, unique_ptr<subprocess::Popen> * pointer)
 {
@@ -83,12 +37,15 @@ string spvwallet::command(vector<string> commands, bool output, string return_at
 	return result; // suspect result may be json or line-delimited
 }
 
-#include <unistd.h>
 void spvwallet::start(bool background, spvwallet::configuration configuration)
 {
+	if (running()) {
+		throw error("Unavailable", "already started");
+	}
 	vector<string> commands({"start"});
 	if (configuration.dataDirectory.size()) {
 		commands.push_back("--datadir=" + configuration.dataDirectory);
+		repository_path = configuration.dataDirectory;
 	}
 	switch (configuration.network)
 	{
@@ -96,9 +53,15 @@ void spvwallet::start(bool background, spvwallet::configuration configuration)
 		break;
 	case spvwallet::configuration::TEST:
 		commands.push_back("--testnet");
+		if (repository_path.size()) {
+			repository_path += PATH_SEPARATOR + "testnet";
+		}
 		break;
 	case spvwallet::configuration::REGRESSION:
 		commands.push_back("--regtest");
+		if (repository_path.size()) {
+			repository_path += PATH_SEPARATOR + "regtest";
+		}
 		break;
 	default:
 		throw error("Unrecognized", "invalid network selection");
@@ -144,8 +107,8 @@ void spvwallet::error::makeAndThrow(string description)
 	}
 }
 
-spvwallet::spvwallet(string path, bool startInBackgroundIfNotRunning, spvwallet::configuration startConfiguration)
-: prefix(path)
+spvwallet::spvwallet(bool startInBackgroundIfNotRunning, spvwallet::configuration startConfiguration)
+: prefix(startConfiguration.binary)
 {
 	if (startInBackgroundIfNotRunning) {
 		if (!running()) {

@@ -24,6 +24,7 @@ public:
 		uint64_t walletCreationDate; // to speed syncing, earliest transaction
 		std::string trustedPeer;
 		bool tor;
+		std::string binary;
 	};
 	struct transaction
 	{
@@ -71,7 +72,7 @@ public:
 	class error::unavailable : public error { public: using error::error; };
 	class error::internal : public error { public: using error::error; };
 
-	spvwallet(std::string path = "spvwallet", bool startInBackgroundIfNotRunning = true, configuration startConfiguration = {});
+	spvwallet(bool startInBackgroundIfNotRunning = true, configuration startConfiguration = {});
 	~spvwallet();
 
 	std::string version();
@@ -94,6 +95,7 @@ public:
 private:
 	std::string prefix;
 	std::unique_ptr<subprocess::Popen> background;
+	std::string repository_path;
 
 	std::string command(std::vector<std::string> commands, bool output = false, std::string return_at_output = {}, std::unique_ptr<subprocess::Popen> * pointer = 0);
 };
