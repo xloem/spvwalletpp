@@ -29,9 +29,9 @@ string to_iso8601(uint64_t timestamp)
 #include <subprocess.hpp>
 //#include <iomanip>
 #include <iostream>
-string process(std::vector<string> const & commands, bool output = false, string return_at_output = {}, unique_ptr<subprocess::Popen> * pointer = 0)
+string process(vector<string> const & commands, bool output = false, string return_at_output = {}, unique_ptr<subprocess::Popen> * pointer = 0)
 {
-	std::unique_ptr<subprocess::Popen> process(new subprocess::Popen(commands, output ? subprocess::output{stdout} : subprocess::output{subprocess::PIPE}, output ? subprocess::error{stderr} : subprocess::error{subprocess::PIPE}));
+	unique_ptr<subprocess::Popen> process(new subprocess::Popen(commands, output ? subprocess::output{stdout} : subprocess::output{subprocess::PIPE}, output ? subprocess::error{stderr} : subprocess::error{subprocess::PIPE}));
 	string result;
 	if (return_at_output.size() == 0) {
 		process->wait();
@@ -56,7 +56,7 @@ string process(std::vector<string> const & commands, bool output = false, string
 			cout << endl;
 		}
 	}
-	if (pointer) *pointer = std::move(process);
+	if (pointer) *pointer = move(process);
 	return result;
 }
 
@@ -86,7 +86,7 @@ string spvwallet::command(vector<string> commands, bool output, string return_at
 #include <unistd.h>
 void spvwallet::start(bool background, spvwallet::configuration configuration)
 {
-	std::vector<string> commands({"start"});
+	vector<string> commands({"start"});
 	if (configuration.dataDirectory.size()) {
 		commands.push_back("--datadir=" + configuration.dataDirectory);
 	}
@@ -144,7 +144,7 @@ void spvwallet::error::makeAndThrow(string description)
 	}
 }
 
-spvwallet::spvwallet(std::string path, bool startInBackgroundIfNotRunning, spvwallet::configuration startConfiguration)
+spvwallet::spvwallet(string path, bool startInBackgroundIfNotRunning, spvwallet::configuration startConfiguration)
 : prefix(path)
 {
 	if (startInBackgroundIfNotRunning) {
@@ -176,7 +176,7 @@ string spvwallet::version()
 uint64_t spvwallet::chaintip()
 {
 	string chaintip = command({"chaintip"});
-	return std::stoull(chaintip);
+	return stoull(chaintip);
 }
 
 string spvwallet::currentaddress()
@@ -205,15 +205,20 @@ void spvwallet::addwatchedaddress(string address)
 	}
 }
 
-std::vector<string> spvwallet::listaddresses()
+vector<string> spvwallet::listaddresses()
 {
 	auto addresses = command({"listaddresses"});
 	return subprocess::util::split(addresses, "\r\n");
 }
 
-std::vector<spvwallet::transaction> spvwallet::transactions()
+string spvwallet::getkey(string address)
 {
-	std::vector<transaction> result;
+	return command({"getkey", address});
+}
+
+vector<spvwallet::transaction> spvwallet::transactions()
+{
+	vector<transaction> result;
 	auto transactions = json::parse(command({"transactions"}));
 	for (auto tjson : transactions)
 	{
@@ -245,9 +250,9 @@ std::vector<spvwallet::transaction> spvwallet::transactions()
 	return result;
 }
 
-std::vector<spvwallet::peer> spvwallet::peers()
+vector<spvwallet::peer> spvwallet::peers()
 {
-	std::vector<peer> result;
+	vector<peer> result;
 	auto peers = json::parse(command({"peers"}));
 	for (auto pjson : peers)
 	{
