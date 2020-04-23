@@ -179,6 +179,12 @@ string spvwallet::getkey(string address)
 	return command({"getkey", address});
 }
 
+vector<string> spvwallet::listkeys()
+{
+	auto keys = command({"listkeys"});
+	return subprocess::util::split(keys, "\r\n");
+}
+
 vector<spvwallet::transaction> spvwallet::transactions()
 {
 	vector<transaction> result;

@@ -86,6 +86,7 @@ public:
 	void addwatchedaddress(std::string address);
 	std::vector<std::string> listaddresses();
 	std::string getkey(std::string address);
+	std::vector<std::string> listkeys();
 	std::vector<transaction> transactions();
 	std::vector<peer> peers();
 
