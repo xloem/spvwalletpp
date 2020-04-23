@@ -24,6 +24,7 @@ void spvwallet::waitForSync(std::function<void(uint64_t current_block, uint64_t 
 	static constexpr auto DOWNLOADING_STALLED = "Download stalled for up to 5s ...";
 	static constexpr auto REBOOTING           = "Rebooting with new peers ...";
 	static constexpr auto RESTARTING          = "Hard stall, recreating headers ...";
+	static constexpr auto COMPLETE            = "Chain updated to tip.";
 
 	string message;
 
@@ -55,7 +56,9 @@ void spvwallet::waitForSync(std::function<void(uint64_t current_block, uint64_t 
 			} else if (total_blocks > current_block) {
 				message = DOWNLOADING;
 			} else {
-				break;
+				message = COMPLETE;
+				if (status) { status(current_block, total_blocks, peers.size(), message); }
+				return;
 			}
 			if (time_with_no_progress) {
 				message = DOWNLOADING_STALLED;
