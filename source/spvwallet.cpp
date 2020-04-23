@@ -84,6 +84,7 @@ void spvwallet::start(bool background, spvwallet::configuration configuration)
 		command(commands, false, "[Press Ctrl+C to exit]", &this->background); 
 	} else {
 		command(commands, true);
+		repository_path.clear();
 	}
 }
 
@@ -126,9 +127,15 @@ void spvwallet::stop()
 	if (background) {
 		background->kill(SIGINT);
 		background.reset();
+		repository_path.clear();
 	} else {
 		command({"stop"});
 	}
+}
+
+bool spvwallet::databaseaccess()
+{
+	return repository_path.size();
 }
 
 string spvwallet::version()

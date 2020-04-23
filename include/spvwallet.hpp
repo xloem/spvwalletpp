@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -94,7 +95,10 @@ public:
 
 	bool running();
 
+	void waitForSync(std::function<void(uint64_t current_block, uint64_t total_blocks, uint64_t peers, std::string message)> status = {});
+
 	// below features require access to the database, which means the dataDirectory must be specified in a call to start()
+	bool databaseaccess();
 	
 	configuration getconfiguration();
 	

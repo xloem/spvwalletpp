@@ -35,7 +35,7 @@ set (SQLITECPP_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/SQLiteCpp/i
 set (SQLITECPP_LIBRARIES SQLiteCpp sqlite3 dl)
 
 ### MAIN: libspvwallet++
-add_library (${SPVWALLETPP_LIBRARIES} SHARED source/spvwallet.cpp source/spvwallet_database.cpp "${SPVWALLETPP_INCLUDE_DIRS}/spvwallet.hpp" ${SPVWALLET_BINARY})
+add_library (${SPVWALLETPP_LIBRARIES} SHARED source/spvwallet.cpp source/spvwallet_database.cpp source/spvwallet_logic.cpp "${SPVWALLETPP_INCLUDE_DIRS}/spvwallet.hpp" ${SPVWALLET_BINARY})
 install (PROGRAMS ${SPVWALLET_BINARY} DESTINATION ${CMAKE_INSTALL_LIBDIR} RENAME spvwallet++.go)
 install (TARGETS ${SPVWALLETPP_LIBRARIES} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
