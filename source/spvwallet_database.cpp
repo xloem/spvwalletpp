@@ -37,6 +37,27 @@ void spvwallet::broadcast(string transaction, string raw)
 }
 */
 
+vector<spvwallet::unspent> spvwallet::unspents(string scripthex)
+{
+	auto & database = this->database();
+	SQLite::Statement query(database, "SELECT outpoint, value, scriptPubKey FROM utxos" + string(scripthex.size() ? " WHERE scriptPubKey = :publicKey" : ""));
+	if (scripthex.size()) {
+		query.bind(1, scripthex);
+	}
+	vector<unspent> result;
+	while (query.executeStep()) {
+		auto outpoint = query.getColumn(0).getString();
+		auto parts = subprocess::util::split(outpoint, ":");
+		result.emplace_back(unspent{
+			parts[0],
+			std::stoull(parts[1]),
+			(uint64_t)query.getColumn(1).getInt64(),
+			query.getColumn(2).getString()
+		});
+	}
+	return result;
+}
+
 /* todo convert address to scriptPubKey portion
 vector<string> spvwallet::transactions_received(string publicKey)
 {

@@ -17,7 +17,11 @@ int main()
 		"1E3J3gjeRuq9R9GgE96g7BSVmZJNgZMqWc",
 		"13eZkQTZCFyEt8Ch3SkX1fubCbK28gzwNx",
 		"13VRTkYjm57YVnKcdEnkBoGJw9ToWMKzW3",
-		"1217dUx97zxsE2zEYwauj9dZspYP4X2uLQ"
+		"1217dUx97zxsE2zEYwauj9dZspYP4X2uLQ",
+		"12AGwnjLmwCvX4ZbgVR1gDQfBr98RVhCun",
+		"1E9NF9DyUrTGR1DgsPAqmjQFzjhxzwtKSj",
+		"1Q6yDxD77UfcE1eDsNSAU84rs9avhrSUqu",
+		"1D9aKPRquRLzgTymFBgitJfmZf6zU45Q9d"
 	};
 
 	for (auto address : watchedaddresses) {
@@ -27,6 +31,11 @@ int main()
 
 	cout << "SPVWallet version: " << spv.version() << endl;
 	cout << "Current address: " << spv.currentaddress() << endl;
+	auto addresses = spv.listaddresses();
+	cout << "Some addresses: " << endl;
+	for (int i = 0; i < 8 && i < addresses.size(); ++ i) {
+		cout << "  " << addresses[i] << endl;
+	}
 	uint64_t chaintip;
 	uint64_t maxtip = 0;
 	std::vector<spvwallet::peer> peers;
@@ -53,6 +62,12 @@ int main()
 		cout << "    watchOnly: " << t.watchOnly << endl;
 		auto data = spv.raw(t.txid);
 		cout << "    size: " << data.size() << endl;
+	}
+	cout << "Unspent:" << endl;
+	for (auto u : spv.unspents()) {
+		cout << "  " << u.transaction << ":" << u.output << endl;
+		cout << "    value: " << u.value << endl;
+		cout << "    script: " << u.scripthex << endl;
 	}
 	/*
 	cout << "Peers:" << endl;

@@ -95,11 +95,19 @@ public:
 
 	// below features require access to the database, which means the dataDirectory must be specified in a call to start()
 	
-	std::string raw(std::string transaction);
+	std::string raw(std::string transaction); // raw bytes, not hex
 	//void broadcast(std::string transaction, std::string raw);
-	//uint64_t balance(std::string publicKey);
-	//std::vector<std::string> transactions_received(std::string publicKey);
-	//std::vector<std::string> transactions_sent(std::string publicKey);
+
+	struct unspent {
+		std::string transaction;
+		uint64_t output;
+		uint64_t value;
+		std::string scripthex;
+	};
+	std::vector<unspent> unspents(std::string scripthex = {});
+	//uint64_t balance(std::string scripthex = {});
+	//std::vector<std::string> transactions_received(std::string scripthex = {});
+	//std::vector<std::string> transactions_sent(std::string scripthex = {});
 
 private:
 	std::string prefix;
