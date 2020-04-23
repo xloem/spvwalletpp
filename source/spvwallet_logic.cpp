@@ -11,25 +11,30 @@ void spvwallet::waitForSync(std::function<void(uint64_t current_block, uint64_t 
 {
 	size_t time_with_no_peers = 0;
 	size_t time_with_no_progress = 0;
+	size_t peerwipes = 0;
 
 	uint64_t current_block = 0;
 	uint64_t total_blocks = 0;
 	vector<peer> peers;
 
-	static constexpr auto FINDING_PEERS = "Waiting for peers ...";
-	static constexpr auto FINDING_TIP = "Waiting for chain length ...";
-	static constexpr auto DOWNLOADING = "Downloading blocks ...";
-	static constexpr auto REBOOTING = "Stalled, rebooting with new peers ...";
+	static constexpr auto FINDING_PEERS       = "Waiting for peers ...";
+	static constexpr auto CONNECTING_STALLED  = "Stalled waiting for peers ...";
+	static constexpr auto FINDING_TIP         = "Waiting for chain length ...";
+	static constexpr auto DOWNLOADING         = "Downloading headers ...";
+	static constexpr auto DOWNLOADING_STALLED = "Download stalled for up to 5s ...";
+	static constexpr auto REBOOTING           = "Rebooting with new peers ...";
+	static constexpr auto RESTARTING          = "Hard stall, recreating headers ...";
 
 	string message;
 
-	uint64_t delay = 250;
+	uint64_t delay = 400;
 
 	while (true) {
 		uint64_t downloaded = chaintip();
 		if (downloaded != current_block) {
 			current_block = downloaded;
 			time_with_no_progress = 0;
+			peerwipes = 0;
 		} else {
 			time_with_no_progress += delay;
 		}
@@ -43,10 +48,7 @@ void spvwallet::waitForSync(std::function<void(uint64_t current_block, uint64_t 
 
 		if (peers.size() == 0) {
 			time_with_no_peers += delay;
-			message = FINDING_PEERS;
-			if (time_with_no_peers) {
-				message	+= " (stalled for " + to_string(time_with_no_peers) + " ms)";
-			}
+			message = time_with_no_peers ? CONNECTING_STALLED : FINDING_PEERS;
 		} else {
 			if (total_blocks == 0) {
 				message = FINDING_TIP;
@@ -56,13 +58,25 @@ void spvwallet::waitForSync(std::function<void(uint64_t current_block, uint64_t 
 				break;
 			}
 			if (time_with_no_progress) {
-				message	+= " (stalled for " + to_string(time_with_no_progress) + " ms)";
+				message = DOWNLOADING_STALLED;
 			}
 		}
 
 		if (time_with_no_progress > 5000 && databaseaccess() && background) {
-			message = REBOOTING;
-			status(current_block, total_blocks, peers.size(), message);
+			if (peerwipes < 3 || !peers.size()) {
+				if (peers.size()) {
+					++ peerwipes;
+				} else {
+					peerwipes = 0;
+				}
+				message = REBOOTING;
+				status(current_block, total_blocks, peers.size(), message);
+			} else {
+				message = RESTARTING;
+				peerwipes = 0;
+				status(current_block, total_blocks, peers.size(), message);
+			}
+			time_with_no_progress = 0;
 
 			auto configuration = getconfiguration();
 			configuration.mnemonic.clear();
@@ -71,7 +85,13 @@ void spvwallet::waitForSync(std::function<void(uint64_t current_block, uint64_t 
 			string oldpath = repository_path + PATH_SEPARATOR + "peers.json";
 			string newpath = oldpath + ".stalled-" + to_string(time(0));
 			rename(oldpath.c_str(), newpath.c_str());
+			if (message == RESTARTING) {
+				oldpath = repository_path + PATH_SEPARATOR + "headers.bin";
+				newpath = oldpath + ".stalled-" + to_string(time(0));
+				rename(oldpath.c_str(), newpath.c_str());
+			}
 			start(true, configuration);
+
 			continue;
 		}
 

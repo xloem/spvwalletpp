@@ -1,8 +1,6 @@
 #include <spvwallet.hpp>
 
 #include <iostream>
-#include <thread>
-#include <chrono>
 
 using namespace std;
 
@@ -11,6 +9,8 @@ int main()
 	spvwallet spv(false);
 	spvwallet::configuration configuration;
 	configuration.dataDirectory = "test-watch";
+	configuration.dataDirectory = "/home/karl/.spvwallet";
+	configuration.dataDirectory = "test-watch-2";
 	spv.start(true, configuration);
 
 	configuration = spv.getconfiguration();
@@ -46,21 +46,12 @@ int main()
 	for (int i = 0; i < 8 && i < addresses.size(); ++ i) {
 		cout << "  " << addresses[i] << endl;
 	}
-	uint64_t chaintip;
-	uint64_t maxtip = 0;
-	std::vector<spvwallet::peer> peers;
-	do {
-		std::this_thread::sleep_for(std::chrono::milliseconds(200));
-		chaintip = spv.chaintip();
-		peers = spv.peers();
-		for (auto & peer : peers) {
-			if (peer.lastBlock > maxtip) {
-				maxtip = peer.lastBlock;
-			}
-		}
-		cout << "\rChain tip: " << chaintip << " / " << maxtip << " (" << peers.size() << " peers)  " << flush;
-	} while (maxtip > chaintip || peers.size() == 0 || maxtip == 0);
+
+	spv.waitForSync([](uint64_t current_block, uint64_t total_blocks, uint64_t peers, string message){
+		cout << "\r" << message << " " << current_block << "/" << total_blocks << "                " << flush;
+	});
 	cout << endl;
+
 	cout << "Balance: " << spv.balance() << endl;
 	cout << "Transactions:" << endl;
 	for (auto t : spv.transactions()) {
