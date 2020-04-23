@@ -13,6 +13,16 @@ int main()
 	configuration.dataDirectory = "test-watch";
 	spv.start(true, configuration);
 
+	configuration = spv.getconfiguration();
+	cout << "Configuration:" << endl;
+	cout << "  dataDirectory: " << configuration.dataDirectory << endl;
+	cout << "  network: " << configuration.network << endl;
+	cout << "  mnemonic: " << configuration.mnemonic << endl;
+	cout << "  creationDate: " << configuration.walletCreationDate << endl;
+	cout << "  trustedPeer: " << configuration.trustedPeer << endl;
+	cout << "  tor: " << configuration.tor << endl;
+	cout << "  binary: " << configuration.binary << endl;
+
 	std::vector<std::string> watchedaddresses = {
 		"1E3J3gjeRuq9R9GgE96g7BSVmZJNgZMqWc",
 		"13eZkQTZCFyEt8Ch3SkX1fubCbK28gzwNx",

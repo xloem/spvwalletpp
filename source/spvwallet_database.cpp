@@ -3,6 +3,9 @@
 #include "utils.hpp"
 
 #include <SQLiteCpp/SQLiteCpp.h>
+#include <nlohmann/json.hpp>
+
+#include <fstream>
 
 using namespace std;
 
@@ -12,6 +15,42 @@ SQLite::Database & spvwallet::database()
 		_database.reset(new spvwallet::database_struct{{repository_path + PATH_SEPARATOR + "wallet.db"}});
 	}
 	return _database->database;
+}
+
+spvwallet::configuration spvwallet::getconfiguration()
+{
+	configuration result;
+	string testnet_tail = PATH_SEPARATOR + "testnet";
+	string regtest_tail = PATH_SEPARATOR + "regtest";
+	auto repository_path_shrunk = repository_path;
+	result.dataDirectory = repository_path;
+	result.network = configuration::MAIN;
+	if (repository_path.size() > testnet_tail.size()) {
+		repository_path_shrunk.resize(repository_path.size() - testnet_tail.size());
+		if (repository_path_shrunk + testnet_tail == repository_path) {
+			result.dataDirectory = repository_path_shrunk;
+			result.network = configuration::TEST;
+		} else if (repository_path_shrunk + regtest_tail == repository_path) {
+			result.dataDirectory = repository_path_shrunk;
+			result.network = configuration::REGRESSION;
+		}
+	}
+
+	auto & database = this->database();
+	result.mnemonic = database.execAndGet("SELECT value FROM config WHERE key = 'mnemonic'").getString();
+	string creationDate = database.execAndGet("SELECT value FROM config WHERE key = 'creationDate'").getString();
+	result.walletCreationDate = from_iso8601(creationDate);
+
+	ifstream settings_stream(repository_path + PATH_SEPARATOR + "settings.json");
+	nlohmann::json settings;
+	settings_stream >> settings;
+
+	result.trustedPeer = settings["trustedPeer"].get<string>();
+	result.tor = settings["proxy"].get<string>().size();
+	
+	result.binary = prefix;
+
+	return result;
 }
 
 string spvwallet::raw(string transaction)

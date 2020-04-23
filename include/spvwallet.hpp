@@ -96,6 +96,8 @@ public:
 
 	// below features require access to the database, which means the dataDirectory must be specified in a call to start()
 	
+	configuration getconfiguration();
+	
 	std::string raw(std::string transaction); // raw bytes, not hex
 	//void broadcast(std::string transaction, std::string raw);
 
