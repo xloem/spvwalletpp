@@ -70,11 +70,11 @@ void spvwallet::waitForSync(std::function<void(uint64_t current_block, uint64_t 
 					peerwipes = 0;
 				}
 				message = REBOOTING;
-				status(current_block, total_blocks, peers.size(), message);
+				if (status) { status(current_block, total_blocks, peers.size(), message); }
 			} else {
 				message = RESTARTING;
 				peerwipes = 0;
-				status(current_block, total_blocks, peers.size(), message);
+				if (status) { status(current_block, total_blocks, peers.size(), message); }
 			}
 			time_with_no_progress = 0;
 
@@ -95,7 +95,7 @@ void spvwallet::waitForSync(std::function<void(uint64_t current_block, uint64_t 
 			continue;
 		}
 
-		status(current_block, total_blocks, peers.size(), message);
+		if (status) { status(current_block, total_blocks, peers.size(), message); }
 
 		this_thread::sleep_for(chrono::milliseconds(delay));
 	}
